@@ -67,7 +67,7 @@ create_default_config()
 {
   echo_text "Create default config"
   if [ ! -f "${HOME}/klipper-tg-bot.conf" ]; then
-    cp "${ROOT_PATH}/Klipper-tg-bot.conf" "${HOME}/klipper-tg-bot.conf"
+    cp "${ROOT_PATH}/klipper-tg-bot.conf" "${HOME}/klipper-tg-bot.conf"
     echo "Default config created (${HOME}/klipper-tg-bot.conf)"
   else
     echo "Config already exists (${HOME}/klipper-tg-bot.conf)"
