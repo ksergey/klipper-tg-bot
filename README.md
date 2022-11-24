@@ -1,6 +1,8 @@
 # kllipper-tg-bot
 Telegram bot for Klipper
 
+![screenshot](/assets/screenshot.jpg)
+
 # Installation
 
 Use the following command to enable automatic start-up of systemd user instances
