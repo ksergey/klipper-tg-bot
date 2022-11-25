@@ -1,7 +1,6 @@
 # kllipper-tg-bot
-Telegram bot for Klipper
 
-![screenshot](/assets/screenshot.jpg)
+Telegram bot for Klipper
 
 # Installation
 
