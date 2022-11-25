@@ -2,8 +2,8 @@ import logging
 
 from aiogram.types import Message
 
+from app import dp, moonraker, bot_command, commands
 from app.config import config
-from app.misc import dp, moonraker, bot_command, commands
 from app.webcam import get_webcam_image
 from app.utils import create_status_text, format_time, format_fillament_length
 
