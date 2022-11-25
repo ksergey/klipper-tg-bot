@@ -27,6 +27,38 @@ async def command_status(message: Message):
         logger.exception(f'exception during process message {message}')
 
 
+@bot_command('last_job_status', 'print last job status')
+async def command_last_job_status(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        data = await moonraker.history_list(limit=1, order='desc')
+        jobs = data['jobs']
+        if not jobs:
+            await message.reply('no jobs')
+        else:
+            job = jobs[0]
+            text = (
+                f'\N{Memo} <i>filename:</i> <b>{job["filename"]}</b>\n'
+                f'\N{White Heavy Check Mark} <i>status:</i> <b>{job["status"]}</b>\n'
+                f'\N{Stopwatch} <i>print duration:</i> <b>{format_time(job["print_duration"])}</b>\n'
+            )
+
+            thumbnails = job['metadata']['thumbnails']
+            if thumbnails:
+                image = await moonraker.get_thumbnail(thumbnails[-1]['relative_path'])
+                if image:
+                    await message.reply_photo(image, caption=text)
+                else:
+                    await message.reply(text)
+            else:
+                await message.reply(text)
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+
 @bot_command('restart', 'restart printer')
 async def command_restart(message: Message):
     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
@@ -59,37 +91,6 @@ async def command_emergency_stop(message: Message):
     try:
         await moonraker.emergency_stop()
         await message.reply('done')
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-@bot_command('last_job_status', 'print last job status')
-async def command_last_job_status(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        data = await moonraker.history_list(limit=1, order='desc')
-        jobs = data['jobs']
-        if not jobs:
-            await message.reply('no jobs')
-        else:
-            job = jobs[0]
-            text = (
-                f'\N{Memo} <i>filename:</i> <b>{job["filename"]}</b>\n'
-                f'\N{White Heavy Check Mark} <i>status:</i> <b>{job["status"]}</b>\n'
-                f'\N{Stopwatch} <i>print duration:</i> <b>{format_time(job["print_duration"])}</b>\n'
-            )
-
-            thumbnails = job['metadata']['thumbnails']
-            if thumbnails:
-                image = await moonraker.get_thumbnail(thumbnails[-1]['relative_path'])
-                if image:
-                    await message.reply_photo(image, caption=text)
-                else:
-                    await message.reply(text)
-            else:
-                await message.reply(text)
     except Exception as ex:
         await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
         logger.exception(f'exception during process message {message}')
