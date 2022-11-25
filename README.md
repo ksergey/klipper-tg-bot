@@ -2,6 +2,12 @@
 
 Telegram bot for Klipper
 
+## Features
+
+- Printing state change and progress notification
+- Emergency stop, restart, etc commands
+- Custom gcode execution
+
 # Installation
 
 Use the following command to enable automatic start-up of systemd user instances

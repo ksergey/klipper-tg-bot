@@ -66,6 +66,9 @@ class Moonraker:
     async def history_list(self, limit: int = 10, start: int = 0, order: str = 'desc') -> dict:
         return await self._ws.request('server.history.list', { 'limit': limit, 'start': start, 'order': order })
 
+    async def gcode_script(self, script: str) -> dict:
+        return await self._ws.request('printer.gcode.script', { 'script': script })
+
     async def get_thumbnail(self, path: str) -> Optional[bytes]:
         return await self._http_get(f'/server/files/gcodes/{path}')
 

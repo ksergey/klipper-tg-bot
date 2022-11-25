@@ -108,6 +108,22 @@ async def command_last_job_status(message: Message):
         await notification_message.delete()
 
 
+@bot_command('gcode', 'execute gcode command')
+async def command_gcode(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        script = message.get_args()
+        if script == '':
+            raise RuntimeError('empty script')
+        await moonraker.gcode_script(script)
+        await message.reply('done')
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+
 @bot_command('help', 'print this help message')
 async def command_help(message: Message):
     help_message = ''.join(
