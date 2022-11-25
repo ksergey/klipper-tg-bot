@@ -1,6 +1,7 @@
 import logging
 
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.utils.callback_data import CallbackData
 
 from app import dp, moonraker, bot_command, commands
 from app.config import config
@@ -8,6 +9,8 @@ from app.webcam import get_webcam_image
 from app.utils import create_status_text, format_time, format_fillament_length
 
 logger = logging.getLogger(__name__)
+
+action_cb = CallbackData('action', 'action', 'ack')
 
 
 @bot_command('status', 'show current printer status')
@@ -27,7 +30,53 @@ async def command_status(message: Message):
         logger.exception(f'exception during process message {message}')
 
 
-@bot_command('last_job_status', 'print last job status')
+def get_action_ack_markup(action: str) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.row(*[
+        InlineKeyboardButton('OK', callback_data=action_cb.new(action=action, ack='ok')),
+        InlineKeyboardButton('Cancel', callback_data=action_cb.new(action=action, ack='cancel'))
+    ])
+    return markup
+
+
+@dp.callback_query_handler(action_cb.filter())
+async def callback_action(query: CallbackQuery, callback_data: dict[str,str]):
+    action = callback_data['action']
+    ack = callback_data['ack']
+
+    if ack == 'ok':
+        try:
+            if action == 'restart':
+                await moonraker.restart()
+            if action == 'firmware_restart':
+                await moonraker.firmware_restart()
+            if action == 'emergency_stop':
+                await moonraker.emergency_stop()
+
+            await query.message.edit_text('done')
+        except Exception as ex:
+            await query.message.edit_text(f'\N{Heavy Ballot X} failed ({ex})')
+            logger.exception(f'exception during process action {action}')
+    else:
+        await query.message.edit_text('cancelled')
+
+
+@bot_command('restart', 'restart printer')
+async def command_restart(message: Message):
+    await message.reply('confirm', reply_markup=get_action_ack_markup('restart'))
+
+
+@bot_command('firmware_restart', 'restart printer firmware')
+async def command_firmware_restart(message: Message):
+    await message.reply('confirm', reply_markup=get_action_ack_markup('firmware_restart'))
+
+
+@bot_command('emergency_stop', 'emergency stop printer')
+async def command_emergency_stop(message: Message):
+    await message.reply('confirm', reply_markup=get_action_ack_markup('emergency_stop'))
+
+
+@bot_command('last', 'print last job status')
 async def command_last_job_status(message: Message):
     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
     try:
@@ -52,45 +101,6 @@ async def command_last_job_status(message: Message):
                     await message.reply(text)
             else:
                 await message.reply(text)
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-
-@bot_command('restart', 'restart printer')
-async def command_restart(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        await moonraker.restart()
-        await message.reply('done')
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-
-@bot_command('firmware_restart', 'restart printer firmware')
-async def command_firmware_restart(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        await moonraker.firmware_restart()
-        await message.reply('done')
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-
-@bot_command('emergency_stop', 'emergency stop printer')
-async def command_emergency_stop(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        await moonraker.emergency_stop()
-        await message.reply('done')
     except Exception as ex:
         await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
         logger.exception(f'exception during process message {message}')
