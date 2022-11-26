@@ -37,6 +37,11 @@ systemctl --user stop klipper-tg-bot.service
 
 ```
 
+if you want to capture images (or video) from web camera you should install `ffmpeg`:
+```sh
+sudo apt-get install ffmpeg
+```
+
 # Configuration
 
 After installation you should configure the bot. By default config file placed in user home directory and has name
@@ -56,7 +61,9 @@ chat_id = 11111
 endpoint = 127.0.0.1:7125
 
 [webcam]
-# url address of web camera to obtain single images (don't try action=stream)
+# input device for ffmpeg to capture image and video. It's could be url of jpeg stream or path to camera device
 # remove the section if you don't have web camera
-url = http://127.0.0.1/webcam/?action=snapshot
+input = http://127.0.0.1/webcam/?action=stream
+# Constant Rate Factor (see https://trac.ffmpeg.org/wiki/Encode/H.264)
+crf = 26
 ```

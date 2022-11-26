@@ -20,7 +20,8 @@ class MoonrakerConfig:
 
 @dataclass
 class WebcamConfig:
-    url: str = None
+    input: str = None
+    crf: int = 26
 
 
 @dataclass
@@ -43,7 +44,8 @@ def load_config() -> Config:
             endpoint=parser.get('moonraker', 'endpoint')
         ),
         webcam=WebcamConfig(
-            url=parser.get('webcam', 'url', fallback=None)
+            input=parser.get('webcam', 'input', fallback=None),
+            crf=int(parser.get('webcam', 'crf', fallback=26))
         )
     )
 

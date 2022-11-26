@@ -15,9 +15,16 @@ commands = []
 
 
 # decorator for register bot commands in telegram
-def bot_command(name: str, description: str):
+def bot_command(name: str, description: str, ignore: bool=False):
     def decorator(func):
         commands.append(BotCommand(name, description))
         dp.register_message_handler(func, commands=[name], chat_id=config.telegram.chat_id)
         return func
-    return decorator
+
+    def empty(func):
+        return func
+
+    if ignore == False:
+        return decorator
+    else:
+        return empty

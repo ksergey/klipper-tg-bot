@@ -5,7 +5,7 @@ from aiogram.utils.callback_data import CallbackData
 
 from app import dp, moonraker, bot_command, commands
 from app.config import config
-from app.webcam import get_webcam_image
+from app.webcam import get_webcam_image, get_webcam_video
 from app.utils import create_status_text, format_time, format_fillament_length
 
 logger = logging.getLogger(__name__)
@@ -117,6 +117,21 @@ async def command_gcode(message: Message):
             raise RuntimeError('empty script')
         await moonraker.gcode_script(script)
         await message.reply('done')
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+# TODO: in case of no device don't add to commands
+@bot_command('video', 'capture few seconds of video', config.webcam.input is None)
+async def command_video(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        video = await get_webcam_video()
+        if video is None:
+            raise RuntimeError('failed to capture video (see logs)')
+        await message.reply_video(video)
     except Exception as ex:
         await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
         logger.exception(f'exception during process message {message}')
