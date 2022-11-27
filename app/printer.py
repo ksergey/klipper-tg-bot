@@ -36,6 +36,9 @@ class Printer:
         if 'display_status' in data:
             self._process_progress_update()
 
+            if 'message' in data['display_status']:
+                self._process_message()
+
     def change_state(self, state: str) -> None:
         if self.state != state:
             self.state = state
@@ -57,6 +60,9 @@ class Printer:
             return self.data['webhooks']['state']
 
         self.change_state(evaluate_state())
+
+    def _process_message(self) -> None:
+        self._invoke_callback('message', self)
 
     def _process_progress_update(self) -> None:
         progress = int(self.data['display_status']['progress'] / Printer.PROGRESS_STEP_SIZE) * Printer.PROGRESS_STEP_SIZE

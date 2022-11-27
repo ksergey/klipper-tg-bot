@@ -33,11 +33,20 @@ async def send_status(printer: Printer) -> None:
         await dp.bot.send_message(chat_id=config.telegram.chat_id, text=text)
 
 
+async def send_message_from_printer(printer: Printer) -> None:
+    message = printer.data['display_status']['message']
+    await dp.bot.send_message(chat_id=config.telegram.chat_id, text=f'printer: <i>{message}</i>')
+
+
 async def startup(dp: Dispatcher):
-    async def callback(printer: Printer) -> None:
+    async def callback_progress_changed(printer: Printer) -> None:
         await send_status(printer)
-    moonraker.printer.add_listener('state_changed', callback)
-    moonraker.printer.add_listener('progress_changed', callback)
+    moonraker.printer.add_listener('state_changed', callback_progress_changed)
+    moonraker.printer.add_listener('progress_changed', callback_progress_changed)
+
+    async def callback_message(printer: Printer) -> None:
+        await send_message_from_printer(printer)
+    moonraker.printer.add_listener('message', callback_message)
 
     await moonraker.open()
 

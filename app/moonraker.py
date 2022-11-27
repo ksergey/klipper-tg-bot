@@ -75,6 +75,8 @@ class Moonraker:
     async def _update(self, method: str, params: Optional[dict]) -> None:
         if method == 'notify_status_update':
             self.printer.update(params)
+        elif method == 'notify_gcode_response':
+            logger.debug(ujson.dumps(params, 2)) # TODO
         elif method == 'connected':
             self.printer.reset()
             await self._subscribe_printer_objects()
