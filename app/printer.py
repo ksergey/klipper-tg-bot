@@ -30,8 +30,9 @@ class Printer:
                 self.data[entry] = {}
             self.data[entry].update(data[entry])
 
-        if 'webhooks' in data or 'print_stats' in data:
-            self._process_status_update()
+        if 'print_stats' in data:
+            if 'state' in data['print_stats']:
+                self.change_state(data['print_stats']['state'])
 
         if 'display_status' in data:
             self._process_progress_update()
@@ -48,18 +49,6 @@ class Printer:
         self.data = {}
         self.state = 'disconnected'
         self.progress = None
-
-    def _process_status_update(self) -> None:
-        def evaluate_state() -> str:
-            if self.data['webhooks']['state'] == 'ready':
-                if self.data['print_stats']:
-                    if self.data['print_stats']['state'] == 'paused' or self.data['pause_resume']['is_paused']:
-                        return 'paused'
-                    if self.data['print_stats']['state'] == 'printing':
-                        return 'printing'
-            return self.data['webhooks']['state']
-
-        self.change_state(evaluate_state())
 
     def _process_message(self) -> None:
         self._invoke_callback('message', self)

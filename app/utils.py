@@ -22,6 +22,7 @@ def format_fillament_length(value: float) -> str:
 
 def create_status_text(printer: Printer) -> str:
     data = printer.data
+    state = data['print_stats']['state']
 
     text = (
         f'\N{White Heavy Check Mark} <i>state:</i> <b>{printer.state}</b>\n'
@@ -39,7 +40,7 @@ def create_status_text(printer: Printer) -> str:
         f'\N{Thermometer} <i>bed:</i> <b>{bed_temperature:.2f}</b>\N{Degree Celsius} ({bed_target:.2f}\N{Degree Celsius})\n'
     )
 
-    if printer.state == 'printing':
+    if state in ('printing', 'complete'):
         filename = data['print_stats']['filename']
         filament_used = data['print_stats']['filament_used']
         print_duration = data['print_stats']['print_duration']
