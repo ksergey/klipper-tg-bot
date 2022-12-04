@@ -37,7 +37,7 @@ class Printer:
         if 'display_status' in data:
             self._process_progress_update()
 
-            if 'message' in data['display_status']:
+            if 'message' in data['display_status'] and data['display_status']['message'] is not None:
                 self._process_message()
 
     def change_state(self, state: str) -> None:
