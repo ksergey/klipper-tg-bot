@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class MoonrakerWebsocket:
     DEFAULT_PORT = 7125
-    RECONNECT_INTERVAL = 5.0
+    RECONNECT_INTERVAL = 10.0
     HEARTBEAT_INTERVAL = 5.0
 
     def __init__(self, endpoint: str, loop: asyncio.AbstractEventLoop = None) -> None:
@@ -135,6 +135,8 @@ class MoonrakerWebsocket:
                         break
                     if message.type == aiohttp.WSMsgType.TEXT:
                         await self._process_message(message.json())
+
+                logger.warning("connection dropped?")
 
         except asyncio.CancelledError as e:
             pass
