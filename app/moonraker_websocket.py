@@ -136,7 +136,8 @@ class MoonrakerWebsocket:
                     if message.type == aiohttp.WSMsgType.TEXT:
                         await self._process_message(message.json())
 
-                logger.warning("connection dropped?")
+                if self._ws and not self._ws.closed:
+                    await self._ws.close()
 
         except asyncio.CancelledError as e:
             pass
