@@ -94,7 +94,7 @@ RestartSec=15
 KillSignal=SIGINT
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 EOF
 
   systemctl --user unmask klipper-tg-bot.service
