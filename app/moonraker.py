@@ -77,15 +77,14 @@ class Moonraker:
             self.printer.update(params)
         elif method == 'notify_gcode_response':
             logger.debug(ujson.dumps(params, 2)) # TODO
-        elif method == 'connected':
+        elif method in ['connected', 'notify_klippy_ready']:
             self.printer.reset()
+            logger.info(f'subscribing printer objects (method: "{method}")')
             await self._subscribe_printer_objects()
         elif method == 'notify_klippy_disconnected':
             self.printer.change_state('disconnected')
         elif method == 'notify_klippy_shutdown':
             self.printer.change_state('shutdown')
-        elif method == 'notify_klippy_ready':
-            self.printer.change_state('ready')
 
     async def _subscribe_printer_objects(self) -> None:
         data = await self._ws.request('printer.objects.subscribe', {
