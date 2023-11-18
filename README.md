@@ -15,6 +15,13 @@ Use the following command to enable automatic start-up of systemd user instances
 sudo loginctl enable-linger ${USER}
 ```
 
+Install `pip` and `virtualenv`:
+
+```sh
+sudo apt-get install python3-pip
+sudo apt-get install python3-virtualenv
+```
+
 Execute the following commands:
 
 ```sh

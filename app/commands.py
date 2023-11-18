@@ -123,6 +123,7 @@ async def command_gcode(message: Message):
     finally:
         await notification_message.delete()
 
+
 # TODO: in case of no device don't add to commands
 @bot_command('video', 'capture few seconds of video', config.webcam.input is None)
 async def command_video(message: Message):
@@ -132,6 +133,34 @@ async def command_video(message: Message):
         if video is None:
             raise RuntimeError('failed to capture video (see logs)')
         await message.reply_video(video)
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+
+@dp.callback_query_handler(chat_id=config.telegram.chat_id)
+async def callback_handler(query: CallbackQuery):
+    action, params = query.data.split(',')
+
+    try:
+        if action == 'hotend_temp':
+            await moonraker.gcode_script(f'SET_HEATER_TEMPERATURE HEATER=extruder TARGET={params}')
+    except Exception as ex:
+        logger.exception(f'exception during process callback (action="{action}", params="{params}"): {ex}')
+
+    await query.answer('done')
+
+
+@bot_command('hotend_temp', 'set hotend temperature')
+async def command_hotend_temp(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        keyboard = InlineKeyboardMarkup()
+        for temp in [ 200, 210, 230, 240, 250 ]:
+            keyboard.row(InlineKeyboardButton(f'{temp} C', callback_data=f'hotend_temp,{temp}'))
+        await message.answer(text='choose temp', reply_markup=keyboard)
     except Exception as ex:
         await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
         logger.exception(f'exception during process message {message}')

@@ -24,23 +24,6 @@ echo_ok()
   printf "${Green}$1${Normal}\n"
 }
 
-install_packages()
-{
-  python3 -m pip install --upgrade pip
-  if [ $? -eq 0 ]; then
-    echo_ok "Installed pip"
-  else
-    echo_error "Installation of pip failed"
-  fi
-
-  pip3 install virtualenv
-  if [ $? -eq 0 ]; then
-    echo_ok "Installed virtualenv"
-  else
-    echo_error "Installation of virtualenv failed"
-  fi
-}
-
 create_virtualenv()
 {
   echo_text "Creating virtual environment"
@@ -51,7 +34,7 @@ create_virtualenv()
   source "${ENV_PATH}/bin/activate"
 
   while read requirements; do
-    pip --disable-pip-version-check --no-cache-dir install $requirements
+    python3 -m pip --disable-pip-version-check --no-cache-dir install $requirements
     if [ $? -gt 0 ]; then
     	echo "Error: pip install exited with status code $?"
       echo "Unable to install dependencies, aborting install."
@@ -102,7 +85,6 @@ EOF
   systemctl --user enable klipper-tg-bot.service
 }
 
-install_packages
 create_virtualenv
 create_default_config
 install_systemd_service
