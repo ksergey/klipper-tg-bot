@@ -1,6 +1,5 @@
 from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand
-from telegram.ext import ParseMode
+from aiogram.types import BotCommand, ParseMode
 from app.config import config
 from app.moonraker import Moonraker
 
