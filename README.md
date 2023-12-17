@@ -18,8 +18,7 @@ sudo loginctl enable-linger ${USER}
 Install `pip` and `virtualenv`:
 
 ```sh
-sudo apt-get install python3-pip
-sudo apt-get install python3-virtualenv
+sudo apt-get install python3-pip python3-virtualenv cython
 ```
 
 Execute the following commands:
