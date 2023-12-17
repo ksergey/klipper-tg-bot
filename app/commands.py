@@ -30,6 +30,70 @@ async def command_status(message: Message):
         logger.exception(f'exception during process message {message}')
 
 
+@bot_command('gcode', 'execute gcode command')
+async def command_gcode(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        script = message.get_args()
+        if script == '':
+            raise RuntimeError('empty script')
+        await moonraker.gcode_script(script)
+        await message.reply('done')
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+
+# TODO: in case of no device don't add to commands
+@bot_command('video', 'capture few seconds of video', config.webcam.input is None)
+async def command_video(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        video = await get_webcam_video()
+        if video is None:
+            raise RuntimeError('failed to capture video (see logs)')
+        await message.reply_video(video)
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+
+@bot_command('last', 'print last job status')
+async def command_last_job_status(message: Message):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+    try:
+        data = await moonraker.history_list(limit=1, order='desc')
+        jobs = data['jobs']
+        if not jobs:
+            await message.reply('no jobs')
+        else:
+            job = jobs[0]
+            text = (
+                f'\N{Memo} <i>filename:</i> <b>{job["filename"]}</b>\n'
+                f'\N{White Heavy Check Mark} <i>status:</i> <b>{job["status"]}</b>\n'
+                f'\N{Stopwatch} <i>print duration:</i> <b>{format_time(job["print_duration"])}</b>\n'
+            )
+
+            thumbnails = job['metadata']['thumbnails']
+            if thumbnails:
+                image = await moonraker.get_thumbnail(thumbnails[-1]['relative_path'])
+                if image:
+                    await message.reply_photo(image, caption=text)
+                else:
+                    await message.reply(text)
+            else:
+                await message.reply(text)
+    except Exception as ex:
+        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
+
+
 def get_action_ack_markup(action: str) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=2)
     markup.row(*[
@@ -76,96 +140,32 @@ async def command_emergency_stop(message: Message):
     await message.reply('confirm', reply_markup=get_action_ack_markup('emergency_stop'))
 
 
-@bot_command('last', 'print last job status')
-async def command_last_job_status(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        data = await moonraker.history_list(limit=1, order='desc')
-        jobs = data['jobs']
-        if not jobs:
-            await message.reply('no jobs')
-        else:
-            job = jobs[0]
-            text = (
-                f'\N{Memo} <i>filename:</i> <b>{job["filename"]}</b>\n'
-                f'\N{White Heavy Check Mark} <i>status:</i> <b>{job["status"]}</b>\n'
-                f'\N{Stopwatch} <i>print duration:</i> <b>{format_time(job["print_duration"])}</b>\n'
-            )
-
-            thumbnails = job['metadata']['thumbnails']
-            if thumbnails:
-                image = await moonraker.get_thumbnail(thumbnails[-1]['relative_path'])
-                if image:
-                    await message.reply_photo(image, caption=text)
-                else:
-                    await message.reply(text)
-            else:
-                await message.reply(text)
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-
-@bot_command('gcode', 'execute gcode command')
-async def command_gcode(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        script = message.get_args()
-        if script == '':
-            raise RuntimeError('empty script')
-        await moonraker.gcode_script(script)
-        await message.reply('done')
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-
-# TODO: in case of no device don't add to commands
-@bot_command('video', 'capture few seconds of video', config.webcam.input is None)
-async def command_video(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        video = await get_webcam_video()
-        if video is None:
-            raise RuntimeError('failed to capture video (see logs)')
-        await message.reply_video(video)
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
-
-
-@dp.callback_query_handler(chat_id=config.telegram.chat_id)
-async def callback_handler(query: CallbackQuery):
-    action, params = query.data.split(',')
-
-    try:
-        if action == 'hotend_temp':
-            await moonraker.gcode_script(f'SET_HEATER_TEMPERATURE HEATER=extruder TARGET={params}')
-    except Exception as ex:
-        logger.exception(f'exception during process callback (action="{action}", params="{params}"): {ex}')
-
-    await query.answer('done')
-
-
-@bot_command('hotend_temp', 'set hotend temperature')
-async def command_hotend_temp(message: Message):
-    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
-    try:
-        keyboard = InlineKeyboardMarkup()
-        for temp in [ 200, 210, 230, 240, 250 ]:
-            keyboard.row(InlineKeyboardButton(f'{temp} C', callback_data=f'hotend_temp,{temp}'))
-        await message.answer(text='choose temp', reply_markup=keyboard)
-    except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
-        logger.exception(f'exception during process message {message}')
-    finally:
-        await notification_message.delete()
+# @dp.callback_query_handler(chat_id=config.telegram.chat_id)
+# async def callback_handler(query: CallbackQuery):
+#     action, params = query.data.split(',')
+#
+#     try:
+#         if action == 'hotend_temp':
+#             await moonraker.gcode_script(f'SET_HEATER_TEMPERATURE HEATER=extruder TARGET={params}')
+#     except Exception as ex:
+#         logger.exception(f'exception during process callback (action="{action}", params="{params}"): {ex}')
+#
+#     await query.answer('done')
+#
+#
+# @bot_command('hotend_temp', 'set hotend temperature')
+# async def command_hotend_temp(message: Message):
+#     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
+#     try:
+#         keyboard = InlineKeyboardMarkup()
+#         for temp in [ 200, 210, 230, 240, 250 ]:
+#             keyboard.row(InlineKeyboardButton(f'{temp} C', callback_data=f'hotend_temp,{temp}'))
+#         await message.answer(text='choose temp', reply_markup=keyboard)
+#     except Exception as ex:
+#         await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+#         logger.exception(f'exception during process message {message}')
+#     finally:
+#         await notification_message.delete()
 
 
 @bot_command('help', 'print this help message')
