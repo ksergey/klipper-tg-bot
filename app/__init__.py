@@ -1,6 +1,5 @@
 from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand
-from aiogram.enums import ParseMode
+from aiogram.types import BotCommand, ParseMode
 from app.config import config
 from app.moonraker import Moonraker
 
