@@ -95,8 +95,10 @@ class MoonrakerWebsocket:
 
     async def _loop_task(self) -> None:
         async def get_oneshot_token() -> str:
+            logger.warning(f'xpos 1')
             url = f'http://{self._endpoint}/access/oneshot_token'
             async with self._session.get(url) as response:
+                logger.warning(f'xpos 2')
                 if response.status != 200:
                     raise Exception('unable to get oneshot token')
                 data = await response.json()
@@ -113,8 +115,12 @@ class MoonrakerWebsocket:
                 self._requests.clear()
 
                 try:
+                    logger.warning(f'pos 1')
+
                     if not self._session or self._session.closed:
-                        self._session = aiohttp.ClientSession(loop=self._loop)
+                        self._session = aiohttp.ClientSession()
+
+                    logger.warning(f'pos 2')
 
                     oneshot_token = await get_oneshot_token()
                     logger.debug(f'oneshot token: {oneshot_token}')

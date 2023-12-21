@@ -1,15 +1,19 @@
-from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand, ParseMode
+from aiogram import Router
+from aiogram.filters import Command
+from aiogram.types import BotCommand
+
 from app.config import config
 from app.moonraker import Moonraker
 
-dp = Dispatcher(
-    Bot(token=config.telegram.token, parse_mode=ParseMode.HTML)
-)
+# dp = Dispatcher(
+#     Bot(token=config.telegram.token, parse_mode=ParseMode.HTML)
+# )
 
 moonraker = Moonraker(
     endpoint=config.moonraker.endpoint
 )
+
+router = Router()
 
 commands = []
 
@@ -18,7 +22,7 @@ commands = []
 def bot_command(name: str, description: str, ignore: bool=False):
     def decorator(func):
         commands.append(BotCommand(name, description))
-        dp.register_message_handler(func, commands=[name], chat_id=config.telegram.chat_id)
+        # dp.register_message_handler(func, commands=[name], chat_id=config.telegram.chat_id)
         return func
 
     def empty(func):
