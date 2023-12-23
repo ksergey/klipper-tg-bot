@@ -3,7 +3,7 @@ import asyncio
 
 from typing import Optional
 
-from app.config import config
+from app.config_reader import config
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand, ParseMode
-from app.config import config
+from app.config_reader import config
 from app.moonraker import Moonraker
 
 dp = Dispatcher(
@@ -12,7 +12,6 @@ moonraker = Moonraker(
 )
 
 commands = []
-
 
 # decorator for register bot commands in telegram
 def bot_command(name: str, description: str, ignore: bool=False):

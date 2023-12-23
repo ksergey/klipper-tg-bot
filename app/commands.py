@@ -4,7 +4,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, C
 from aiogram.utils.callback_data import CallbackData
 
 from app import dp, moonraker, bot_command, commands
-from app.config import config
+from app.config_reader import config
 from app.webcam import get_webcam_image, get_webcam_video
 from app.utils import create_status_text, format_time, format_fillament_length
 

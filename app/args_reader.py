@@ -5,7 +5,7 @@ import logging
 
 
 def create_parser():
-    parser = argparse.ArgumentParser(description='moonraker telegram bot')
+    parser = argparse.ArgumentParser(description='klipper telegram bot')
     parser.add_argument(
         '-c', '--config',
         help='path to config file',

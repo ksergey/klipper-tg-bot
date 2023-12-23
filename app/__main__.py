@@ -9,8 +9,8 @@ from aiogram.types import Message, BotCommand, ReplyKeyboardRemove
 from aiogram.utils import executor
 
 from app import dp, moonraker, commands, bot_command
-from app.args import args
-from app.config import config
+from app.args_reader import args
+from app.config_reader import config
 from app.utils import create_status_text
 from app.printer import Printer
 from app.webcam import get_webcam_image

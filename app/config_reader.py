@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from dataclasses import dataclass, field
 from typing import List, Dict
 
-from app.args import args
+from app.args_reader import args
 
 
 @dataclass
