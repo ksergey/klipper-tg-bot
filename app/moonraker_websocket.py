@@ -39,12 +39,12 @@ class MoonrakerWebsocket:
         return self._ws is not None and not self._ws.closed
 
     async def open(self) -> None:
-        if self._task is not None and self._task.done() is not False:
+        if self._task and not self._task.done():
             raise Exception('moonraker service already running')
         self._task = asyncio.create_task(self._loop_task())
 
     async def close(self) -> None:
-        if self._task is not None or self._task.done() is True:
+        if not self._task or self._task.done():
             return
 
         self._task.cancel()
