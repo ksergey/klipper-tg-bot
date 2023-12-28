@@ -9,7 +9,7 @@ from inspect import iscoroutinefunction
 logger = logging.getLogger(__name__)
 
 
-class MoonrakerWebsocket:
+class MoonrakerSession:
     DEFAULT_PORT = 7125
     RECONNECT_INTERVAL = 10.0
     HEARTBEAT_INTERVAL = 5.0
@@ -22,7 +22,7 @@ class MoonrakerWebsocket:
         if ':' in endpoint:
             host, port = endpoint.split(':')
         else:
-            host, port = (endpoint, str(MoonrakerWebsocket.DEFAULT_PORT))
+            host, port = (endpoint, str(MoonrakerSession.DEFAULT_PORT))
 
         self._endpoint = f'{host}:{port}'
         self._loop = loop
@@ -38,8 +38,8 @@ class MoonrakerWebsocket:
         self._listeners.append(callback)
 
 
-    def is_opened(self) -> bool:
-        return self._ws is not None and not self._ws.closed
+    def online(self) -> bool:
+        return self._ws and not self._ws.closed
 
 
     async def open(self) -> None:
@@ -117,7 +117,7 @@ class MoonrakerWebsocket:
             while True:
                 if next_connect_time > self._loop.time():
                     await asyncio.sleep(next_connect_time - self._loop.time())
-                next_connect_time = self._loop.time() + MoonrakerWebsocket.RECONNECT_INTERVAL
+                next_connect_time = self._loop.time() + MoonrakerSession.RECONNECT_INTERVAL
 
                 self._requests.clear()
 
@@ -130,7 +130,7 @@ class MoonrakerWebsocket:
 
                     if not self._ws or self._ws.closed:
                         url = f'ws://{self._endpoint}/websocket?token={oneshot_token}'
-                        self._ws = await self._session.ws_connect(url, heartbeat=MoonrakerWebsocket.HEARTBEAT_INTERVAL)
+                        self._ws = await self._session.ws_connect(url, heartbeat=MoonrakerSession.HEARTBEAT_INTERVAL)
                         logger.info(f'connected to {url}')
 
                 except Exception as e:

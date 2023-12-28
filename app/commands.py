@@ -16,7 +16,7 @@ action_cb = CallbackData('action', 'action', 'ack')
 @bot_command('status', 'show current printer status')
 async def command_status(message: Message):
     try:
-        if not moonraker.is_opened():
+        if not moonraker.online():
             raise RuntimeError('moonraker not connected')
 
         text = create_status_text(moonraker.printer)
