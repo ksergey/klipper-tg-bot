@@ -16,11 +16,13 @@ class Printer:
         self.progress = None
         self._listeners = {}
 
+
     def add_listener(self, event: str, callback: Callable) -> None:
         if event in self._listeners:
             self._listeners[event].append(callback)
         else:
             self._listeners[event] = [callback]
+
 
     def update(self, data: dict) -> None:
         for entry in data:
@@ -40,18 +42,22 @@ class Printer:
             if 'message' in data['display_status'] and data['display_status']['message'] is not None:
                 self._process_message()
 
+
     def change_state(self, state: str) -> None:
         if self.state != state:
             self.state = state
             self._invoke_callback('state_changed', self)
+
 
     def reset(self) -> None:
         self.data = {}
         self.state = 'disconnected'
         self.progress = None
 
+
     def _process_message(self) -> None:
         self._invoke_callback('message', self)
+
 
     def _process_progress_update(self) -> None:
         progress = int(self.data['display_status']['progress'] / Printer.PROGRESS_STEP_SIZE) * Printer.PROGRESS_STEP_SIZE
@@ -63,6 +69,7 @@ class Printer:
         if self.progress < progress:
             self.progress = progress
             self._invoke_callback('progress_changed', self)
+
 
     def _invoke_callback(self, event: str, *args, **kwargs) -> None:
         if event not in self._listeners:
