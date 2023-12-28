@@ -14,6 +14,7 @@ class MoonrakerWebsocket:
     RECONNECT_INTERVAL = 10.0
     HEARTBEAT_INTERVAL = 5.0
 
+
     def __init__(self, endpoint: str, loop: asyncio.AbstractEventLoop = None) -> None:
         if loop is None:
             loop = asyncio.get_event_loop()
@@ -32,16 +33,20 @@ class MoonrakerWebsocket:
         self._requests = dict()
         self._next_id = 0
 
+
     def add_listener(self, callback: Callable) -> None:
         self._listeners.append(callback)
 
+
     def is_opened(self) -> bool:
         return self._ws is not None and not self._ws.closed
+
 
     async def open(self) -> None:
         if self._task and not self._task.done():
             raise Exception('moonraker service already running')
         self._task = asyncio.create_task(self._loop_task())
+
 
     async def close(self) -> None:
         if not self._task or self._task.done():
@@ -49,6 +54,7 @@ class MoonrakerWebsocket:
 
         self._task.cancel()
         await self._task
+
 
     async def request(self, method: str, params: Optional[dict] = None) -> dict:
         future = self._loop.create_future()
@@ -71,6 +77,7 @@ class MoonrakerWebsocket:
 
         return data['result']
 
+
     async def _send_request(self, method: str, params: Optional[dict] = None, id: Optional[int] = None) -> None:
         if self._ws is None or self._ws.closed:
             raise RuntimeError('moonraker not connected')
@@ -88,10 +95,12 @@ class MoonrakerWebsocket:
 
         await self._ws.send_str(request_str)
 
+
     def _get_next_id(self) -> int:
         id = self._next_id
         self._next_id += 1
         return id
+
 
     async def _loop_task(self) -> None:
         async def get_oneshot_token() -> str:
@@ -149,6 +158,7 @@ class MoonrakerWebsocket:
             if self._session and not self._session.closed:
                 await self._session.close()
 
+
     async def _process_message(self, data) -> None:
         logger.debug(f'data: {ujson.dumps(data, indent=2)}')
 
@@ -165,6 +175,7 @@ class MoonrakerWebsocket:
                 future.set_result(data)
                 del self._requests[id]
             return
+
 
     async def _invoke_callback(self, method: str, params: dict) -> None:
         for callback in self._listeners:
