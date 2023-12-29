@@ -119,7 +119,7 @@ class MoonrakerSession:
                     await asyncio.sleep(next_connect_time - self._loop.time())
                 next_connect_time = self._loop.time() + MoonrakerSession.RECONNECT_INTERVAL
 
-                self._requests.clear()
+                self._clear_requests()
 
                 try:
                     if not self._session or self._session.closed:
@@ -157,6 +157,7 @@ class MoonrakerSession:
                 await self._ws.close()
             if self._session and not self._session.closed:
                 await self._session.close()
+            self._clear_requests()
 
 
     async def _process_message(self, data) -> None:
@@ -175,6 +176,12 @@ class MoonrakerSession:
                 future.set_result(data)
                 del self._requests[id]
             return
+
+    def _clear_requests(self):
+        for _, request in self._requests.items():
+            logger.debug(f'clearing pending request {request}')
+            request.cancel()
+        self._requests.clear()
 
 
     async def _invoke_callback(self, method: str, params: dict) -> None:
