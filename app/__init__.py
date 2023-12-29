@@ -1,11 +1,9 @@
 from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand, ParseMode
+from aiogram.types import BotCommand
 from app.config_reader import config
 from app.moonraker import Moonraker
 
-dp = Dispatcher(
-    Bot(token=config.telegram.token, parse_mode=ParseMode.HTML)
-)
+dp = Dispatcher()
 
 moonraker = Moonraker(
     endpoint=config.moonraker.endpoint
