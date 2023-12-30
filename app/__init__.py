@@ -1,21 +1,23 @@
-from aiogram import Bot, Dispatcher
+from aiogram import Router, F
 from aiogram.types import BotCommand
+from aiogram.filters import Command, CommandObject
 from app.config_reader import config
 from app.moonraker import Moonraker
-
-dp = Dispatcher()
 
 moonraker = Moonraker(
     endpoint=config.moonraker.endpoint
 )
 
-commands = []
+all_commands = []
+
+main_router = Router()
 
 # decorator for register bot commands in telegram
 def bot_command(name: str, description: str, ignore: bool=False):
     def decorator(func):
-        commands.append(BotCommand(name, description))
-        dp.register_message_handler(func, commands=[name], chat_id=config.telegram.chat_id)
+        all_commands.append(BotCommand(command=name, description=description))
+        main_router.message.register(func, Command(name))
+        # main_router.message.register(func, Command(name), F.chat_id==config.telegram.chat_id)
         return func
 
     def empty(func):

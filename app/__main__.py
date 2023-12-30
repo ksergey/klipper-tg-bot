@@ -5,10 +5,10 @@ import ujson
 from typing import Optional
 
 from aiogram import Dispatcher, Bot
-from aiogram.types import Message, BotCommand, ReplyKeyboardRemove
+from aiogram.types import Message, BotCommand, ReplyKeyboardRemove, BufferedInputFile
 from aiogram.enums import ParseMode
 
-from app import dp, moonraker, commands, bot_command
+from app import moonraker, commands, all_commands, main_router
 from app.args_reader import args
 from app.config_reader import config
 from app.utils import create_status_text
@@ -28,7 +28,7 @@ async def send_status(printer: Printer, bot: Bot) -> None:
     text = create_status_text(printer)
     image = await get_webcam_image()
     if image is not None:
-        await bot.send_photo(chat_id=config.telegram.chat_id, photo=image, caption=text)
+        await bot.send_photo(chat_id=config.telegram.chat_id, photo=BufferedInputFile(image, 'live_view.png'), caption=text)
     else:
         await bot.send_message(chat_id=config.telegram.chat_id, text=text)
 
@@ -51,7 +51,7 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
 
     await moonraker.open()
 
-    await bot.set_my_commands(commands=commands)
+    await bot.set_my_commands(commands=all_commands)
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.send_message(
         config.telegram.chat_id,
@@ -67,6 +67,8 @@ async def on_shutdown(dispatcher: Dispatcher, bot: Bot):
 async def main():
     logger.info(f'config:\n{config}')
 
+    dp = Dispatcher()
+    dp.include_router(main_router)
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
 

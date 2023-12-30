@@ -15,23 +15,20 @@ class MoonrakerSession:
     HEARTBEAT_INTERVAL = 5.0
 
 
-    def __init__(self, endpoint: str, loop: asyncio.AbstractEventLoop = None) -> None:
-        if loop is None:
-            loop = asyncio.get_event_loop()
-
+    def __init__(self, endpoint: str) -> None:
         if ':' in endpoint:
             host, port = endpoint.split(':')
         else:
             host, port = (endpoint, str(MoonrakerSession.DEFAULT_PORT))
 
         self._endpoint = f'{host}:{port}'
-        self._loop = loop
         self._task = None
         self._session: Optional[aiohttp.ClientSession] = None
         self._ws: Optional[aiohttp.ClientWebSocketResponse] = None
         self._listeners = []
         self._requests = dict()
         self._next_id = 0
+        self._background_tasks = set()
 
 
     def add_listener(self, callback: Callable) -> None:
@@ -57,7 +54,7 @@ class MoonrakerSession:
 
 
     async def request(self, method: str, params: Optional[dict] = None) -> dict:
-        future = self._loop.create_future()
+        future = asyncio.Future()
         id = self._get_next_id()
         self._requests[id] = future
 
@@ -115,15 +112,16 @@ class MoonrakerSession:
             next_connect_time = 0.0
 
             while True:
-                if next_connect_time > self._loop.time():
-                    await asyncio.sleep(next_connect_time - self._loop.time())
-                next_connect_time = self._loop.time() + MoonrakerSession.RECONNECT_INTERVAL
+                loop = asyncio.get_running_loop()
+                if next_connect_time > loop.time():
+                    await asyncio.sleep(next_connect_time - loop.time())
+                next_connect_time = loop.time() + MoonrakerSession.RECONNECT_INTERVAL
 
                 self._clear_requests()
 
                 try:
                     if not self._session or self._session.closed:
-                        self._session = aiohttp.ClientSession(loop=self._loop)
+                        self._session = aiohttp.ClientSession()
 
                     oneshot_token = await get_oneshot_token()
                     logger.debug(f'oneshot token: {oneshot_token}')
@@ -137,13 +135,34 @@ class MoonrakerSession:
                     logger.error(f'failed to establish connection ({e})')
                     continue
 
-                asyncio.ensure_future(self._invoke_callback('connected', {}), loop=self._loop)
+
+                self._invoke_callback('connected', {})
+
+                # try:
+                #     task = asyncio.create_task(self._invoke_callback('connected', {}))
+                # except Exception as e:
+                #     logger.warning(f'can\'t invoke callback: {e}')
+                # else:
+                #     self._background_tasks.add(task)
+                #     task.add_done_callback(self._background_tasks.discard)
 
                 async for message in self._ws:
+                    logger.debug("received message")
                     if message.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR):
                         break
-                    if message.type == aiohttp.WSMsgType.TEXT:
-                        await self._process_message(message.json())
+                    if message.type != aiohttp.WSMsgType.TEXT:
+                        continue
+
+                    self._process_message(message.json())
+
+                    # try:
+                    #     task = asyncio.create_task(self._process_message(message.json()))
+                    # except Exception as e:
+                    #     logger.warning(f'can\'t process websocket message: {e}')
+                    # else:
+                    #     self._background_tasks.add(task)
+                    #     task.add_done_callback(self._background_tasks.discard)
+
 
                 logger.warning('closing websocket connection')
                 if self._ws and not self._ws.closed:
@@ -160,13 +179,13 @@ class MoonrakerSession:
             self._clear_requests()
 
 
-    async def _process_message(self, data) -> None:
+    def _process_message(self, data) -> None:
         logger.debug(f'data: {ujson.dumps(data, indent=2)}')
 
         if 'method' in data:
             method = data['method']
             params = data['params'][0] if 'params' in data else {}
-            asyncio.ensure_future(self._invoke_callback(method, params), loop=self._loop)
+            self._invoke_callback(method, params)
             return
 
         if 'id' in data:
@@ -177,19 +196,24 @@ class MoonrakerSession:
                 del self._requests[id]
             return
 
+
+    def _invoke_callback(self, method: str, params: dict) -> None:
+        for callback in self._listeners:
+            try:
+                if iscoroutinefunction(callback):
+                    task = asyncio.create_task(callback(method, params))
+                else:
+                    callback(method, params)
+            except Exception as e:
+                logger.error(f'got exception during invoke callback "{method}": {e}')
+            else:
+                if task:
+                    self._background_tasks.add(task)
+                    task.add_done_callback(self._background_tasks.discard)
+
+
     def _clear_requests(self):
         for _, request in self._requests.items():
             logger.debug(f'clearing pending request {request}')
             request.cancel()
         self._requests.clear()
-
-
-    async def _invoke_callback(self, method: str, params: dict) -> None:
-        for callback in self._listeners:
-            try:
-                if iscoroutinefunction(callback):
-                    await callback(method, params)
-                else:
-                    callback(method, params)
-            except Exception as e:
-                logger.error(f'got exception during invoke callback ({e})')

@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class Moonraker:
-    def __init__(self, endpoint: str, loop: asyncio.AbstractEventLoop = None) -> None:
+    def __init__(self, endpoint: str) -> None:
         self._url = f'http://{endpoint}'
-        self._session = MoonrakerSession(endpoint, loop)
+        self._session = MoonrakerSession(endpoint)
         self._session.add_listener(self._update)
         self.printer = Printer()
 
