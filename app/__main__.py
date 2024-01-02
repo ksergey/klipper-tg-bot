@@ -4,8 +4,8 @@ import ujson
 
 from typing import Optional
 
-from aiogram import Dispatcher, Bot
-from aiogram.types import Message, BotCommand, ReplyKeyboardRemove, BufferedInputFile, BotCommandScopeAllPrivateChats
+from aiogram import Dispatcher, Bot, F
+from aiogram.types import Message, BotCommand, ReplyKeyboardRemove, BufferedInputFile, BotCommandScopeAllPrivateChats, BotCommandScopeChat
 from aiogram.enums import ParseMode
 
 from app import commands, all_commands, main_router
@@ -54,7 +54,7 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot, moonraker: Moonraker):
 
     logger.info(f'all_commands={all_commands}')
 
-    await bot.set_my_commands(commands=all_commands, scope=BotCommandScopeAllPrivateChats())
+    await bot.set_my_commands(commands=all_commands, scope=BotCommandScopeChat(chat_id=config.telegram.chat_id))
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.send_message(
         config.telegram.chat_id,
@@ -64,7 +64,7 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot, moonraker: Moonraker):
 
 async def on_shutdown(dispatcher: Dispatcher, bot: Bot, moonraker: Moonraker):
     await bot.send_message(config.telegram.chat_id, f'\N{Black Left-Pointing Pointer} <i>bot going offline</i>')
-    await bot.delete_my_commands()
+    await bot.delete_my_commands(scope=BotCommandScopeChat(chat_id=config.telegram.chat_id))
     await moonraker.close()
 
 
@@ -74,6 +74,9 @@ async def main():
     moonraker = Moonraker(
         endpoint=config.moonraker.endpoint
     )
+
+    # accept messages only from configured chat id
+    main_router.message.filter(F.chat.id == config.telegram.chat_id)
 
     # pass moonraker to dispatcher constructor
     # now "moonraker: Moonraker" could be arg for a handler

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 @bot_command('status', 'show current printer status')
 async def command_status(message: Message, bot: Bot, dispatcher: Dispatcher, moonraker: Moonraker):
+    notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
     try:
         if not moonraker.online():
             raise RuntimeError('moonraker not connected')
@@ -30,6 +31,8 @@ async def command_status(message: Message, bot: Bot, dispatcher: Dispatcher, moo
     except Exception as ex:
         await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
         logger.exception(f'exception during process message {message}')
+    finally:
+        await notification_message.delete()
 
 
 @bot_command('gcode', 'execute gcode command')
