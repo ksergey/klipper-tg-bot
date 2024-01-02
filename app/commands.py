@@ -4,7 +4,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, BufferedInputFile
 # from aiogram.utils.callback_data import CallbackData
 
-from app import moonraker, bot_command, all_commands
+from app import bot_command, all_commands
+from app.moonraker import Moonraker
 from app.config_reader import config
 from app.webcam import get_webcam_image, get_webcam_video
 from app.utils import create_status_text, format_time, format_fillament_length
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @bot_command('status', 'show current printer status')
-async def command_status(message: Message, bot: Bot, dispatcher: Dispatcher):
+async def command_status(message: Message, bot: Bot, dispatcher: Dispatcher, moonraker: Moonraker):
     try:
         if not moonraker.online():
             raise RuntimeError('moonraker not connected')
@@ -32,7 +33,7 @@ async def command_status(message: Message, bot: Bot, dispatcher: Dispatcher):
 
 
 @bot_command('gcode', 'execute gcode command')
-async def command_gcode(message: Message, bot: Bot, dispatcher: Dispatcher):
+async def command_gcode(message: Message, bot: Bot, dispatcher: Dispatcher, moonraker: Moonraker):
     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
     try:
         script = message.get_args()
@@ -64,7 +65,7 @@ async def command_video(message: Message, bot: Bot, dispatcher: Dispatcher):
 
 
 @bot_command('last', 'print last job status')
-async def command_last_job_status(message: Message, bot: Bot, dispatcher: Dispatcher):
+async def command_last_job_status(message: Message, bot: Bot, dispatcher: Dispatcher, moonraker: Moonraker):
     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
     try:
         data = await moonraker.history_list(limit=1, order='desc')

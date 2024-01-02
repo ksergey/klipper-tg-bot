@@ -5,15 +5,16 @@ import ujson
 from typing import Optional
 
 from aiogram import Dispatcher, Bot
-from aiogram.types import Message, BotCommand, ReplyKeyboardRemove, BufferedInputFile
+from aiogram.types import Message, BotCommand, ReplyKeyboardRemove, BufferedInputFile, BotCommandScopeAllPrivateChats
 from aiogram.enums import ParseMode
 
-from app import moonraker, commands, all_commands, main_router
+from app import commands, all_commands, main_router
 from app.args_reader import args
 from app.config_reader import config
 from app.utils import create_status_text
 from app.printer import Printer
 from app.webcam import get_webcam_image
+from app.moonraker import Moonraker
 
 logging.basicConfig(
     filename=args.logfile,
@@ -38,7 +39,7 @@ async def send_message_from_printer(printer: Printer, bot: Bot) -> None:
     await bot.send_message(chat_id=config.telegram.chat_id, text=f'printer: <i>{message}</i>')
 
 
-async def on_startup(dispatcher: Dispatcher, bot: Bot):
+async def on_startup(dispatcher: Dispatcher, bot: Bot, moonraker: Moonraker):
     async def callback_progress_changed(printer: Printer) -> None:
         if printer.data is not None:
             await send_status(printer, bot)
@@ -51,7 +52,9 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
 
     await moonraker.open()
 
-    await bot.set_my_commands(commands=all_commands)
+    logger.info(f'all_commands={all_commands}')
+
+    await bot.set_my_commands(commands=all_commands, scope=BotCommandScopeAllPrivateChats())
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.send_message(
         config.telegram.chat_id,
@@ -59,15 +62,22 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot):
     )
 
 
-async def on_shutdown(dispatcher: Dispatcher, bot: Bot):
+async def on_shutdown(dispatcher: Dispatcher, bot: Bot, moonraker: Moonraker):
     await bot.send_message(config.telegram.chat_id, f'\N{Black Left-Pointing Pointer} <i>bot going offline</i>')
+    await bot.delete_my_commands()
     await moonraker.close()
 
 
 async def main():
     logger.info(f'config:\n{config}')
 
-    dp = Dispatcher()
+    moonraker = Moonraker(
+        endpoint=config.moonraker.endpoint
+    )
+
+    # pass moonraker to dispatcher constructor
+    # now "moonraker: Moonraker" could be arg for a handler
+    dp = Dispatcher(moonraker=moonraker)
     dp.include_router(main_router)
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)

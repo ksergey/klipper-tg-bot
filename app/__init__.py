@@ -2,11 +2,6 @@ from aiogram import Router, F
 from aiogram.types import BotCommand
 from aiogram.filters import Command, CommandObject
 from app.config_reader import config
-from app.moonraker import Moonraker
-
-moonraker = Moonraker(
-    endpoint=config.moonraker.endpoint
-)
 
 all_commands = []
 
