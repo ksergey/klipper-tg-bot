@@ -15,41 +15,41 @@ class ControlCallback(CallbackData, prefix='ctrl'):
     gcode: str
 
 def make_control_keyboard(distance: int = 50) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardBuilder()
-    keyboard.button(
+    builder = InlineKeyboardBuilder()
+    builder.button(
         text='Home All',
         callback_data=ControlCallback(gcode='G28')
     )
-    keyboard.button(
+    builder.button(
         text='Y+',
         callback_data=ControlCallback(gcode=f'G1 Y{distance}')
     )
-    keyboard.button(
+    builder.button(
         text='Home XY',
         callback_data=ControlCallback(gcode='G28 X Y')
     )
-    keyboard.button(
+    builder.button(
         text='Z+',
         callback_data=ControlCallback(gcode=f'G1 Z{distance}')
     )
-    keyboard.button(
+    builder.button(
         text='X-',
         callback_data=ControlCallback(gcode=f'G1 X-{distance}')
     )
-    keyboard.button(
+    builder.button(
         text='Y-',
         callback_data=ControlCallback(gcode=f'G1 Y-{distance}')
     )
-    keyboard.button(
+    builder.button(
         text='X+',
         callback_data=ControlCallback(gcode=f'G1 X{distance}')
     )
-    keyboard.button(
+    builder.button(
         text='Z-',
         callback_data=ControlCallback(gcode=f'G1 Z-{distance}')
     )
-    keyboard.adjust(4)
-    return keyboard.as_markup(resize_keyboard=True)
+    builder.adjust(4)
+    return builder.as_markup(resize_keyboard=True)
 
 @router.callback_query(ControlCallback.filter())
 async def callback_control(callback: CallbackQuery, callback_data: ControlCallback, bot: Bot, moonraker: Moonraker):
