@@ -1,6 +1,5 @@
 from app.printer import Printer
 
-
 def format_time(value: float) -> str:
     days, rest = divmod(int(value), int(3600 * 24))
     hours, rest = divmod(rest, int(3600))
@@ -14,11 +13,9 @@ def format_time(value: float) -> str:
     else:
         return f'{seconds}s'
 
-
 def format_fillament_length(value: float) -> str:
     meters = value * 0.001
     return f'{meters:.1f}m'
-
 
 def create_status_text(printer: Printer) -> str:
     data = printer.data

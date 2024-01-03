@@ -32,7 +32,7 @@ async def get_webcam_image() -> Optional[bytes]:
     return await ffmpeg_execute_with_args('-frames:v 1 -c:v png -f image2pipe')
 
 
-async def get_webcam_video(duration: int=5):
+async def get_webcam_video(duration: int=5) -> Optional[bytes]:
     return await ffmpeg_execute_with_args(
         f'-t {duration} -an -c:v libx264 -crf {config.webcam.crf} -movflags frag_keyframe+empty_moov -f mp4 -pix_fmt yuv420p'
     )

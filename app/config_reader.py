@@ -6,30 +6,25 @@ from typing import List, Dict
 
 from app.args_reader import args
 
-
 @dataclass
 class TelegramConfig:
     token: str = field(repr=False)
     chat_id: int = field(repr=False)
 
-
 @dataclass
 class MoonrakerConfig:
     endpoint: str
-
 
 @dataclass
 class WebcamConfig:
     input: str = None
     crf: int = 26
 
-
 @dataclass
 class Config:
     telegram: TelegramConfig
     moonraker: MoonrakerConfig
     webcam: WebcamConfig
-
 
 def load_config() -> Config:
     parser = ConfigParser()
@@ -50,6 +45,5 @@ def load_config() -> Config:
     )
 
     return config
-
 
 config = load_config()

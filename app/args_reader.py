@@ -3,7 +3,6 @@ __all__ = ("args")
 import argparse
 import logging
 
-
 def create_parser():
     parser = argparse.ArgumentParser(description='klipper telegram bot')
     parser.add_argument(
@@ -30,6 +29,5 @@ def create_parser():
     )
 
     return parser
-
 
 args = create_parser().parse_args()
