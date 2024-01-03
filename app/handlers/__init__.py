@@ -9,7 +9,7 @@ commands = [
     BotCommand(command='gcode', description='excecute gcode'),
     BotCommand(command='video', description='capture few seconds video'),
     BotCommand(command='last', description='show last print job status'),
-    BotCommand(command='control', description='show control toolbox'),
+    BotCommand(command='toolbox', description='show control toolbox'),
     BotCommand(command='help', description='show help'),
 ]
 
@@ -23,14 +23,14 @@ async def handler_command_help(message: Message):
     await message.answer(help_message)
 
 def setup_router() -> Router:
-    from . import status, gcode, video, last, control
+    from . import status, gcode, video, last, toolbox
 
     main_router = Router()
     main_router.include_router(status.router)
     main_router.include_router(gcode.router)
     main_router.include_router(video.router)
     main_router.include_router(last.router)
-    main_router.include_router(control.router)
+    main_router.include_router(toolbox.router)
     main_router.include_router(router)
 
     return main_router
