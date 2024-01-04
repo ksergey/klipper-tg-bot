@@ -8,6 +8,10 @@ Telegram bot for Klipper
 - Emergency stop, restart, etc commands
 - Custom gcode execution
 
+<p align="center">
+  <img src="/assets/preview.gif" width="85%"/>
+</p>
+
 # Installation
 
 Use the following command to enable automatic start-up of systemd user instances
