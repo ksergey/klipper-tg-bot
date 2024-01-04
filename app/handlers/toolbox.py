@@ -3,8 +3,8 @@ import logging
 from aiogram import Bot, Dispatcher, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
-from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 from aiogram.filters.callback_data import CallbackData
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 
 from app.moonraker import Moonraker
 
@@ -64,5 +64,5 @@ async def handler_command_toolbox(message: Message):
     try:
         await message.answer(f'\N{Wrench} toolbox', reply_markup=make_toolbox_keyboard(25))
     except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        await message.reply(f'\N{Heavy Ballot X} error: {ex}')
         logger.exception(f'exception during process message {message}')

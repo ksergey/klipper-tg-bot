@@ -18,7 +18,7 @@ async def handler_command_video(message: Message, bot: Bot, dispatcher: Dispatch
             raise RuntimeError('failed to capture video (see logs)')
         await message.reply_video(BufferedInputFile(video, 'live.mp4'))
     except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        await message.reply(f'\N{Heavy Ballot X} error: {ex}')
         logger.exception(f'exception during process message {message}')
     finally:
         await notification_message.delete()

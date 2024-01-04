@@ -36,7 +36,7 @@ async def handler_command_last(message: Message, bot: Bot, dispatcher: Dispatche
             else:
                 await message.reply(text)
     except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        await message.reply(f'\N{Heavy Ballot X} error: {ex}')
         logger.exception(f'exception during process message {message}')
     finally:
         await notification_message.delete()

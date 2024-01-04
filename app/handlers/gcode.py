@@ -19,7 +19,7 @@ async def handler_command_gcode(message: Message, bot: Bot, dispatcher: Dispatch
         await moonraker.gcode_script(script)
         await message.reply('done')
     except Exception as ex:
-        await message.reply(f'\N{Heavy Ballot X} failed ({ex})')
+        await message.reply(f'\N{Heavy Ballot X} error: {ex}')
         logger.exception(f'exception during process message {message}')
     finally:
         await notification_message.delete()
