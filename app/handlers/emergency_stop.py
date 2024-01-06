@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.filters.callback_data import CallbackData
@@ -27,7 +27,7 @@ def make_confirmation_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 @router.callback_query(EmergencyStopCallback.filter())
-async def callback_emergency_stop(callback: CallbackQuery, callback_data: EmergencyStopCallback, bot: Bot, moonraker: Moonraker):
+async def callback_emergency_stop(callback: CallbackQuery, callback_data: EmergencyStopCallback, moonraker: Moonraker):
     await callback.answer()
 
     message = callback.message.reply_to_message
@@ -43,5 +43,5 @@ async def callback_emergency_stop(callback: CallbackQuery, callback_data: Emerge
         await message.edit_text(f'\N{Heavy Ballot X} error: {ex}')
 
 @router.message(Command('emergency_stop'))
-async def handler_command_emergency_stop(message: Message, bot: Bot, dispatcher: Dispatcher, moonraker: Moonraker):
+async def handler_command_emergency_stop(message: Message, moonraker: Moonraker):
     await message.reply('are you shure?', reply_markup=make_confirmation_keyboard())

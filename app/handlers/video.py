@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Router
 from aiogram.types import Message, BufferedInputFile
 from aiogram.filters import Command
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 @router.message(Command('video'))
-async def handler_command_video(message: Message, bot: Bot, dispatcher: Dispatcher):
+async def handler_command_video(message: Message):
     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
     try:
         video = await get_webcam_video()

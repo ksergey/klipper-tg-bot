@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.filters.callback_data import CallbackData
@@ -55,7 +55,7 @@ def make_toolbox_keyboard(distance: int = 50) -> InlineKeyboardMarkup:
     return builder.as_markup(resize_keyboard=True)
 
 @router.callback_query(ToolboxCallback.filter())
-async def callback_toolbox(callback: CallbackQuery, callback_data: ToolboxCallback, bot: Bot, moonraker: Moonraker):
+async def callback_toolbox(callback: CallbackQuery, callback_data: ToolboxCallback, moonraker: Moonraker):
     await moonraker.gcode_script(callback_data.gcode)
     await callback.answer(text=f'done')
 

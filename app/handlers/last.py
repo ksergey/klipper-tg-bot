@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Router
 from aiogram.types import Message, BufferedInputFile
 from aiogram.filters import Command
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 @router.message(Command('last'))
-async def handler_command_last(message: Message, bot: Bot, dispatcher: Dispatcher, moonraker: Moonraker):
+async def handler_command_last(message: Message, moonraker: Moonraker):
     notification_message = await message.answer('\N{SLEEPING SYMBOL}...')
     try:
         data = await moonraker.history_list(limit=1, order='desc')
