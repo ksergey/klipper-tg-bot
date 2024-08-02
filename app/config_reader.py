@@ -14,6 +14,7 @@ class TelegramConfig:
 @dataclass
 class MoonrakerConfig:
     endpoint: str
+    notification_events: List[str]
 
 @dataclass
 class WebcamConfig:
@@ -36,7 +37,8 @@ def load_config() -> Config:
             chat_id=int(parser.get('telegram', 'chat_id'))
         ),
         moonraker=MoonrakerConfig(
-            endpoint=parser.get('moonraker', 'endpoint')
+            endpoint=parser.get('moonraker', 'endpoint'),
+            notification_events=parser.get('moonraker', 'notification_events', fallback='state,progress').split(',')
         ),
         webcam=WebcamConfig(
             input=parser.get('webcam', 'input', fallback=None),

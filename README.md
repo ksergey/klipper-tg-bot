@@ -69,6 +69,8 @@ chat_id = 11111
 [moonraker]
 # address where moonraker service listen
 endpoint = 127.0.0.1:7125
+# notification events
+notification_events = state,progress
 
 [webcam]
 # input device for ffmpeg to capture image and video. It's could be url of jpeg stream or path to camera device

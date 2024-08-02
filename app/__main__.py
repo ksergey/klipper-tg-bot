@@ -37,8 +37,12 @@ async def on_startup(dispatcher: Dispatcher, bot: Bot, moonraker: Moonraker):
     async def callback_progress_changed(printer: Printer) -> None:
         if printer.data is not None:
             await send_status(printer, bot)
-    moonraker.printer.add_listener('state_changed', callback_progress_changed)
-    moonraker.printer.add_listener('progress_changed', callback_progress_changed)
+    if 'state' in config.moonraker.notification_events:
+        logger.info('config - state')
+        moonraker.printer.add_listener('state_changed', callback_progress_changed)
+    if 'progress' in config.moonraker.notification_events:
+        logger.info('config - progress')
+        moonraker.printer.add_listener('progress_changed', callback_progress_changed)
 
     async def callback_message(printer: Printer) -> None:
         await send_message_from_printer(printer, bot)
