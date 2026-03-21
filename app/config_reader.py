@@ -10,6 +10,7 @@ from app.args_reader import args
 class TelegramConfig:
     token: str = field(repr=False)
     chat_id: int = field(repr=False)
+    proxy: str = field(repr=False)
 
 @dataclass
 class MoonrakerConfig:
@@ -34,7 +35,8 @@ def load_config() -> Config:
     config = Config(
         telegram=TelegramConfig(
             token=parser.get('telegram', 'token'),
-            chat_id=int(parser.get('telegram', 'chat_id'))
+            chat_id=int(parser.get('telegram', 'chat_id')),
+            proxy=parser.get('telegram', 'proxy', fallback=None)
         ),
         moonraker=MoonrakerConfig(
             endpoint=parser.get('moonraker', 'endpoint'),
