@@ -4,6 +4,7 @@ import asyncio
 from aiogram import Dispatcher, Bot, F
 from aiogram.types import ReplyKeyboardRemove, BufferedInputFile, BotCommandScopeChat
 from aiogram.enums import ParseMode
+from aiogram.client.default import DefaultBotProperties
 
 from app.args_reader import args
 from app.config_reader import config
@@ -78,7 +79,7 @@ async def main():
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
 
-    bot = Bot(token=config.telegram.token, parse_mode=ParseMode.HTML)
+    bot = Bot(token=config.telegram.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
     await dp.start_polling(bot)
 
