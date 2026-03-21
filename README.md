@@ -60,20 +60,22 @@ After installation you should configure the bot. By default config file placed i
 Configuration example:
 ```ini
 [telegram]
-# telegram bot api token from @BotFather (https://t.me/BotFather)
+# Telegram bot API token from @BotFather (https://t.me/BotFather)
 token = 270485614:AAHfiqksKZ8WmR2zSjiQ7_v4TMAKdiHm9T0
-# telegram chat id where bot will talk and receive commands. It's could be telegram group or private chat with bot.
+# Telegram chat id where bot will talk and receive commands. It's could be telegram group or private chat with bot.
 # @getmyid_bot (https://t.me/getmyid_bot) could help to obtain that number.
 chat_id = 11111
+# Proxy for telegram api
+proxy = socks5://user:pass@127.0.0.1
 
 [moonraker]
-# address where moonraker service listen
+# Address where moonraker service listen
 endpoint = 127.0.0.1:7125
 # notification events
 notification_events = state,progress
 
 [webcam]
-# input device for ffmpeg to capture image and video. It's could be url of jpeg stream or path to camera device
+# Input device for ffmpeg to capture image and video. It's could be url of jpeg stream or path to camera device
 # remove the section if you don't have web camera
 input = http://127.0.0.1/webcam/?action=stream
 # Constant Rate Factor (see https://trac.ffmpeg.org/wiki/Encode/H.264)
